@@ -1,0 +1,111 @@
+While learning web application security, I solved a lab called “OS Command Injection – Simple Case” from PortSwigger Web Security Academy.
+This lab clearly shows how a small mistake in input handling can lead to a serious security issue.
+
+Let me explain it in simple words.
+
+🤔 What is OS Command Injection?
+
+OS Command Injection happens when:
+
+A web application takes user input
+
+That input is directly used inside system (OS) commands
+
+And the input is not properly validated
+
+This allows an attacker to run their own commands on the server.
+
+🧪 What Was Vulnerable in This Lab?
+
+In this lab, there was a product stock checker feature.
+
+Behind the scenes:
+
+The application runs a shell command
+
+It uses values like productID and storeID
+
+These values come directly from the user
+
+The dangerous part ❗
+👉 The application does not sanitize these inputs and shows the raw command output in the response.
+
+🎯 Goal of the Lab
+
+The task was simple:
+
+Run the whoami command and find out which user is running on the server.
+
+🛠 Tool I Used
+
+Burp Suite – to intercept and modify HTTP requests
+
+🔍 Step-by-Step: How I Solved the Lab
+1️⃣ Intercepting the Request
+
+I clicked on the stock check feature and intercepted the request using Burp Suite.
+
+The request contained something like:
+
+storeID=1
+
+
+At this point, the application trusts this value completely.
+
+2️⃣ Injecting a Command
+
+I modified the storeID parameter like this:
+
+storeID=1|whoami
+
+
+Why this works:
+
+| is a shell operator
+
+It tells the system to run another command after the first one
+
+Since input is not filtered, the server executes whoami
+
+3️⃣ Seeing the Result
+
+After forwarding the request, the response showed the output of the whoami command.
+
+✔ This confirmed that command injection was successful
+✔ Lab solved 🎉
+
+💡 What I Learned from This Lab
+
+Even simple input fields can be dangerous
+
+Never trust user input in system commands
+
+Input validation is extremely important
+
+OS command injection can lead to full server compromise
+
+Burp Suite is a powerful tool for testing real-world vulnerabilities
+
+🔐 Why This Is Important in Real Life
+
+If this happens in a real application, an attacker could:
+
+Read sensitive files
+
+Run malicious commands
+
+Take full control of the server
+
+That’s why developers and security testers must take this vulnerability seriously.
+
+🔗 Lab Link
+
+👉 OS Command Injection – Simple Case
+https://lnkd.in/gBrG_F2s
+
+🚀 Final Thoughts
+
+This lab helped me understand how OS command injection works in real scenarios, not just theory.
+Learning step by step and practicing hands-on labs like this is making my web security fundamentals stronger.
+
+I’ll keep sharing my learning journey as I explore more vulnerabilities.
