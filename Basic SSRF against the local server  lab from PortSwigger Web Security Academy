@@ -1,0 +1,86 @@
+Hey guys 👋
+I recently completed the “Basic SSRF against the local server” lab from PortSwigger Web Security Academy, and this is me explaining it the way I understood it.
+
+I’m still learning, so I’ll keep this simple and beginner-friendly.
+
+!! What is SSRF (in very simple words)?
+SSRF (Server-Side Request Forgery) means:
+
+👉 Instead of you sending a request
+👉 You make the server send the request for you
+
+If the application is not careful, we can tell the server:
+“Hey, go talk to this internal page.”
+
+And the server actually does it 😅
+
+? What was happening in this lab?
+The website was a shopping site.
+When I clicked on a product, there was a stock check feature at the bottom.
+
+Behind the scenes:
+
+The app was calling another URL to check stock
+That URL was passed as a parameter
+The server trusted that value fully ❌
+That’s where the problem started.
+
+@@ Goal of the Lab
+The goal was:
+
+👉 Use SSRF to access the internal admin page
+👉 That admin page was running on localhost
+
+Normal users should never be able to access it.
+
+? How I Solved It (My Understanding)
+1️⃣ Watching the request
+When I clicked “Check stock”, I intercepted the request using Burp Suite.
+
+I noticed a parameter that contained a URL (stock API).
+
+This was a big hint.
+
+2️⃣ Decoding the URL
+The URL was encoded, so I decoded it to understand what the server was calling.
+
+Become a member
+After decoding, I saw that the server was fetching stock data from another internal service.
+
+3️⃣ Changing the URL
+Instead of letting the server go to the stock service, I changed the URL to point to:
+
+http://localhost/admin
+Since the server trusted my input, it made a request to its own admin page.
+
+And it worked 😮
+
+4️⃣ Accessing the Admin Page
+Once the admin page was visible, I could see admin actions that should never be exposed to users.
+
+After performing the required admin action, the lab was marked as solved 🎉
+
+? What I Learned from This Lab
+SSRF happens when user input controls server requests
+Internal services are often trusted too much
+URL encoding does not make input safe
+Admin pages must have strong access controls
+SSRF can be very dangerous if ignored
+?Why SSRF is Dangerous in Real Life
+If SSRF exists in a real application, attackers can:
+
+Access internal admin panels
+Scan internal networks
+Reach cloud metadata services
+Steal sensitive information
+That’s why SSRF is a high-impact vulnerability.
+
+## Lab Reference
+👉 Basic SSRF against the local server
+https://lnkd.in/genTDSc7
+
+# Final Thoughts
+This lab helped me understand SSRF practically, not just in theory.
+I’m learning one vulnerability at a time and sharing what I understand.
+
+More labs coming soon 💪
