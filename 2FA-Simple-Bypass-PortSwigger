@@ -1,0 +1,91 @@
+2FA Simple Bypass – PortSwigger Lab Write-Up
+
+This repository contains my write-up for the “2FA Simple Bypass” lab from the PortSwigger Web Security Academy.
+
+This lab demonstrates how Two-Factor Authentication (2FA) can be bypassed when it is not properly enforced on the server side.
+
+Lab Goal
+
+The goal of this lab was to access Carlos’s account without completing the 2FA step.
+
+Given Credentials
+
+Attacker account
+wiener : peter
+
+Victim account
+carlos : montoya
+
+Step 1: Login with Attacker Account
+
+Logged in using wiener:peter
+
+Username and password were accepted
+
+Application requested a 2FA code
+
+Entered the valid 2FA code received via email
+
+Login was successful
+
+After login, the account page URL was:
+
+/my-account
+
+Step 2: Login with Victim Account
+
+Logged out and logged in using carlos:montoya
+
+Username and password were accepted
+
+Application asked for a 2FA code
+
+No access to Carlos’s email, so the 2FA code could not be entered
+
+Step 3: Bypass 2FA
+
+While still on the 2FA verification page
+
+Manually changed the URL to:
+
+/my-account
+
+The page loaded successfully
+
+Access to Carlos’s account was granted without completing 2FA
+
+Lab solved.
+
+Why Did This Work?
+
+This issue occurred because:
+
+The account page was not properly protected
+
+The application did not verify whether 2FA was completed
+
+There was no proper server-side validation
+
+This is an example of a Broken Access Control vulnerability.
+
+What I Learned
+
+2FA must always be enforced on the server side
+
+Client-side or UI-based checks are not sufficient
+
+Sensitive endpoints must verify authentication status
+
+Small implementation mistakes can lead to serious security issues
+
+Conclusion
+
+This lab shows that security vulnerabilities are not always complex.
+Sometimes, missing validation checks are enough to break application security.
+
+PortSwigger labs are very useful for understanding real-world web security issues.
+
+Reference
+
+PortSwigger Web Security Academy
+https://portswigger.net/web-security
