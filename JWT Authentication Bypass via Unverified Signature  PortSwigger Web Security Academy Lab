@@ -1,0 +1,154 @@
+JWT Authentication Bypass via Unverified Signature
+
+PortSwigger Web Security Academy Lab
+
+Introduction
+
+Today I solved the lab JWT authentication bypass via unverified signature from PortSwigger Web Security Academy.
+
+Before starting this lab, I first read about JSON Web Token (JWT), JWT signature, JWS, and common JWT attacks. After understanding these concepts, I started the lab.
+
+At first, I was not getting it and tried many ways, but nothing worked. I got confused, so I stopped, went back again, and understood the JWT flow properly. After that, I came back to the lab and finally solved it.
+
+This write-up is based completely on my own learning and hands-on practice.
+
+Lab Goal
+
+The goal of this lab is:
+
+Login as a normal user
+
+Exploit JWT authentication issue
+
+Login as administrator
+
+Delete the user carlos
+
+Solve the lab
+
+Starting the Lab
+
+First, I logged in as wiener.
+
+Then I opened Burp Suite and installed these extensions:
+
+JWT Editor
+
+JSON Web Tokens
+
+These extensions helped me decode and modify JWT tokens easily.
+
+Finding the JWT Token
+
+After login, I intercepted the My Account request.
+
+In the request cookies, I saw a session token, which was a JWT.
+
+I decoded the JWT and saw the payload:
+
+"username": "wiener"
+
+
+This showed that the application was trusting the username from the JWT payload.
+
+Modifying the JWT Payload
+
+First, I changed:
+
+"username": "wiener"
+
+
+to:
+
+"username": "carlos"
+
+
+I sent the request and it worked.
+
+Then I changed it again to:
+
+"username": "administrator"
+
+
+It worked again, which confirmed that the JWT signature was not being verified.
+
+Getting Confused Again
+
+I thought the lab was solved, but when I copied the admin URL, it redirected me back to the login page.
+
+So I went back again and checked:
+
+Admin requests
+
+JWT token in Burp Repeater
+
+JSON Web Tokens tab
+
+Final Step to Solve the Lab
+
+I intercepted the admin request and sent it to Burp Repeater.
+
+Inside Repeater:
+
+I modified the JWT payload to:
+
+"username": "administrator"
+
+
+Then I sent this request:
+
+GET /admin/delete?username=carlos HTTP/2
+
+
+The request was accepted, the user carlos was deleted, and the lab was solved.
+
+Why This Vulnerability Is Dangerous
+
+This vulnerability is dangerous because:
+
+JWT payload can be modified easily
+
+Signature is not verified
+
+Attacker can become admin
+
+Full application compromise is possible
+
+What I Learned from This Lab
+
+JWT signature verification is very important
+
+Never trust JWT payload blindly
+
+Understanding basics helps a lot
+
+It is okay to get stuck and retry
+
+Practice makes concepts clear
+
+Lab Reference
+
+PortSwigger Web Security Academy
+JWT authentication bypass via unverified signature
+https://portswigger.net/web-security/jwt/lab-jwt-authentication-bypass-via-unverified-signature
+
+Full Blog and Post
+
+Medium Write-up:
+https://tsaubhage0007.medium.com/jwt-authentication-bypass-via-unverified-signature-6b64f8665e54
+
+LinkedIn Post:
+https://www.linkedin.com/in/tejas-saubhage
+
+About Me
+
+My name is Tejas Saubhage.
+I am learning cybersecurity and focusing on web security and authentication vulnerabilities by solving hands-on labs.
+
+GitHub: https://github.com/tejas0077
+
+Medium: https://medium.com/@tsaubhage0007
+
+LinkedIn: https://www.linkedin.com/in/tejas-saubhage
+
+This repository is part of my PortSwigger learning journey.
