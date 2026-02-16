@@ -1,0 +1,144 @@
+Lab Scenario
+Given:
+
+Store credit: $50.00
+Product price: $1337.00 (Lightweight "l33t" Leather Jacket)
+Discount code: PROMO20 (20% off, single use only)
+
+Goal:
+Apply the discount code multiple times to reduce the price low enough to complete the purchase.
+
+Vulnerability
+The application checks if a coupon has been used before applying it. However, there is a race condition between:
+
+Checking if the code is already used
+Applying the discount
+Marking the code as used
+
+If multiple requests arrive simultaneously, they can all pass the "already used" check before any of them marks the code as used.
+
+Exploitation Steps
+Step 1: Capture the Request
+
+Add the product to cart
+Apply the discount code PROMO20
+Intercept the request in Burp Suite
+
+Request:
+httpPOST /cart/coupon HTTP/2
+Host: 0a51001204295b4b84cf64cd00b2002b.web-security-academy.net
+Cookie: session=xMpBa4pSihPhasCSTgc6r7iH7t...(truncated)
+Content-Type: application/x-www-form-urlencoded
+
+csrf=OpSiPnkhpacCSTgc6r7iH7t+xVhcz5Es&coupon=PROMO20
+Step 2: Create Request Group
+
+Send the request to Repeater
+Create 20+ tabs with the same request
+Add all tabs to a group
+
+Step 3: Send Parallel Requests
+
+Right-click on the group
+Select "Send group (parallel)"
+This ensures all requests hit the server at the same time
+
+Step 4: Verify Success
+Check the response:
+httpHTTP/2 302 Found
+Location: /cart?coupon=PROMO20
+```
+
+Multiple successful applications will result in:
+- Original price: $1337.00
+- After multiple 20% discounts: $15.40
+- Store credit available: $50.00
+
+### Step 5: Complete Purchase
+
+Place the order and the lab is solved.
+
+---
+
+## Technical Analysis
+
+### Normal Flow:
+```
+Request 1: Check code → Valid → Apply discount → Mark as used
+Request 2: Check code → Already used → Reject
+```
+
+### Race Condition Flow:
+```
+Request 1: Check code → Valid (not marked yet)
+Request 2: Check code → Valid (still not marked)
+Request 3: Check code → Valid (still not marked)
+...
+Request 20: Check code → Valid (still not marked)
+
+All requests apply discount before marking code as used
+Key Timing Window:
+The vulnerability exists in the microseconds between:
+
+if (!couponUsed) ← All requests pass this check
+couponUsed = true ← Before any request reaches this
+
+
+Tools Used
+
+Burp Suite Professional
+Burp Repeater (Send group feature)
+
+
+Remediation
+For Developers:
+1. Use Atomic Operations
+python# Bad - Race condition vulnerable
+if not coupon_used:
+    apply_discount()
+    mark_as_used()
+
+# Good - Atomic transaction
+with transaction.atomic():
+    coupon = Coupon.objects.select_for_update().get(code='PROMO20')
+    if not coupon.used:
+        apply_discount()
+        coupon.used = True
+        coupon.save()
+2. Implement Pessimistic Locking
+sqlSELECT * FROM coupons WHERE code = 'PROMO20' FOR UPDATE;
+3. Use Idempotency Keys
+Ensure duplicate requests do not process multiple times.
+4. Add Rate Limiting
+Limit requests per user per second.
+5. Queue Processing
+Process coupon applications sequentially, not in parallel.
+
+Key Takeaways
+
+Race conditions exploit timing, not logic flaws
+The gap between check and action is the vulnerability
+Parallel request tools are essential for exploitation
+This vulnerability exists in real-world applications (e-commerce, booking systems, payment gateways)
+Atomic operations and proper locking mechanisms prevent this
+
+
+Learning Process
+Attempt 1 (Friday): Failed - Did not send enough parallel requests
+Attempt 2 (Saturday): Failed - Timing was not precise enough
+Attempt 3 (Sunday): Success - Used Burp's parallel send feature with 20+ requests
+
+Related Resources
+
+Full writeup on Medium
+PortSwigger Lab
+BlackHat 2023 - Race Conditions Presentation
+
+
+About
+This writeup is part of my journey learning web application security and penetration testing. I document every lab I solve to help others learn and to solidify my own understanding.
+More labs. More learning.
+
+Author: Tejas Saubhage
+Date: February 16, 2026
+Lab Source: PortSwigger Web Security Academy
